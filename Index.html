@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<title>Order & Loading Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--ink:#0f2742;--muted:#64748b;--line:#e2e8f0;--bg:#eef2f6;--card:#fff;
+--steel:#0e7c86;--steel-soft:#e0f2f3;--ok:#15935f;--warn:#e8590c;--warn-soft:#fff0e6;--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Thai',system-ui,sans-serif;font-size:15px}
+.top{position:sticky;top:0;z-index:5;background:var(--ink);color:#fff;display:flex;align-items:center;gap:24px;padding:0 28px;height:60px}
+.brand{font-weight:700;font-size:17px;display:flex;gap:10px;align-items:center}
+.brand i{color:#5eead4}
+.tabs{display:flex;gap:4px;height:100%}
+.tab{background:none;border:0;color:#a9bbd0;font:inherit;font-weight:500;padding:0 18px;cursor:pointer;border-bottom:3px solid transparent}
+.tab:hover{color:#fff}.tab.on{color:#fff;border-color:#5eead4}
+.tab:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #5eead4;outline-offset:2px}
+main{max-width:1280px;margin:0 auto;padding:28px}
+h1{font-size:24px;margin:0 0 20px;display:flex;gap:12px;align-items:center}
+h1 i{color:var(--steel)}
+h2{font-size:17px;margin:30px 0 14px;display:flex;gap:10px;align-items:center}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:0 1px 2px rgba(15,39,66,.06),0 8px 24px rgba(15,39,66,.05);padding:22px}
+.grid{display:grid;gap:18px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+@media(max-width:760px){.g2{grid-template-columns:1fr}main{padding:16px}.top{padding:0 14px;gap:12px}.brand span{display:none}}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-weight:600;font-size:16px}
+.mhead small{color:var(--muted);font-weight:400}
+.bar{height:26px;background:var(--bg);border-radius:99px;overflow:hidden}
+.bar b{display:flex;align-items:center;justify-content:flex-end;height:100%;min-width:0;padding-right:10px;color:#fff;font-size:12px;
+ background:linear-gradient(90deg,#0f2742,#0e7c86);border-radius:99px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;background:var(--bg);border-radius:12px;padding:14px 16px}
+.stats small{display:block;color:var(--muted);font-size:12px}.stats strong{font-size:20px}
+.ok{color:var(--ok)}.warn{color:var(--warn)}
+.bigstat{display:flex;align-items:center;gap:16px;border-left:5px solid var(--steel)}
+.bigstat .ico{width:48px;height:48px;border-radius:12px;background:var(--steel-soft);color:var(--steel);display:grid;place-items:center;font-size:20px}
+.bigstat small{color:var(--muted)}.bigstat strong{display:block;font-size:30px;line-height:1.1}
+.wh{border-left:5px solid var(--ink)}.wh strong{font-size:26px;display:block}.wh small{color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+th{background:#f6f8fb;text-align:left;font-weight:600;color:#475569;padding:14px 16px;font-size:13px;white-space:nowrap}
+td{padding:13px 16px;border-top:1px solid var(--line)}
+tbody tr:hover{background:#f9fbfd}
+.wrap{overflow-x:auto;border-radius:var(--radius);padding:0}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:600}
+.pill.g{background:#e3f6ec;color:var(--ok)}.pill.o{background:var(--warn-soft);color:var(--warn)}.pill.n{background:#eef1f5;color:var(--muted)}
+.pill.d{background:var(--steel-soft);color:var(--steel);white-space:nowrap}
+.sku{color:var(--steel);font-weight:600}.red{color:#e5484d;font-weight:600}
+.rmk{min-width:260px;max-width:420px;white-space:normal;color:#334155}
+input[type=text],input[type=date]{width:100%;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+input:focus{border-color:var(--steel);outline:0;box-shadow:0 0 0 3px var(--steel-soft)}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:10px 18px;cursor:pointer;color:#fff;display:inline-flex;gap:8px;align-items:center}
+.btn.save{background:var(--ok)}.btn.del{background:#e5484d}.btn.gray{background:#475569}.btn:hover{filter:brightness(1.08)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin:30px 0 14px;gap:12px;flex-wrap:wrap}.toolbar h2{margin:0}
+.filters{display:flex;gap:14px;align-items:end;flex-wrap:wrap}.filters label{flex:1;min-width:180px;font-size:13px;color:var(--muted)}
+.filters label input{margin-top:6px;color:var(--ink)}
+.chartbox{height:260px}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+.err{background:#fdecec;color:#b42318;border-radius:12px;padding:16px;margin-bottom:16px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:12px;transition:.3s;opacity:0}
+#toast.show{transform:translateX(-50%);opacity:1}
+.skel{height:120px;border-radius:var(--radius);background:linear-gradient(90deg,#e6ebf1,#f4f7fa,#e6ebf1);background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><i class="fa-solid fa-ship"></i><span>Order &amp; Loading</span></div>
+  <nav class="tabs">
+    <button class="tab on" data-p="order"><i class="fa-solid fa-clipboard-list"></i> Ordertreat</button>
+    <button class="tab" data-p="load"><i class="fa-solid fa-truck-ramp-box"></i> การโหลดสินค้า</button>
+  </nav>
+</header>
+
+<main>
+<div id="err"></div>
+
+<!-- ===== หน้า 1 ===== -->
+<section id="p-order">
+  <h1><i class="fa-solid fa-clipboard-list"></i>ข้อมูล Ordertreat</h1>
+  <div class="grid g2" id="months"><div class="skel"></div><div class="skel"></div></div>
+  <div class="toolbar">
+    <h2><i class="fa-solid fa-table-list"></i>ตารางสรุปการผลิตและการจัดส่ง (รวมยอดตามวันโหลด)</h2>
+    <div style="display:flex;gap:10px">
+      <button class="btn save" id="bSave"><i class="fa-solid fa-floppy-disk"></i>บันทึก</button>
+      <button class="btn del" id="bClear"><i class="fa-solid fa-trash"></i>ล้างบันทึก</button>
+    </div>
+  </div>
+  <div class="card wrap"><table>
+    <thead><tr><th>วันที่โหลด</th><th>ค้างผลิตรวม (ตัน)</th><th>วันที่แพ็คเสร็จล่าสุด</th><th>inspec</th><th>Remark</th></tr></thead>
+    <tbody id="gBody"></tbody>
+  </table></div>
+</section>
+
+<!-- ===== หน้า 2 ===== -->
+<section id="p-load" hidden>
+  <h1><i class="fa-solid fa-truck-ramp-box"></i>ข้อมูลการโหลดสินค้า</h1>
+  <div class="card filters">
+    <label>วันที่เริ่มต้น<input type="date" id="dFrom"></label>
+    <label>วันที่สิ้นสุด<input type="date" id="dTo"></label>
+    <button class="btn gray" id="bReset"><i class="fa-solid fa-rotate-left"></i>รีเซ็ต</button>
+  </div>
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card bigstat"><div class="ico"><i class="fa-solid fa-box"></i></div><div><small>โหลดสะสม (ตู้)</small><strong id="kBox">–</strong></div></div>
+    <div class="card bigstat" style="border-color:var(--ok)"><div class="ico" style="background:#e3f6ec;color:var(--ok)"><i class="fa-solid fa-weight-hanging"></i></div><div><small>โหลดสะสม (ตัน)</small><strong id="kTon">–</strong></div></div>
+  </div>
+  <h2><i class="fa-solid fa-warehouse"></i>สรุปจำนวนตู้สะสมแยกตามคลัง</h2>
+  <div class="grid g3" id="whCards"></div>
+  <h2><i class="fa-solid fa-chart-column"></i>ปริมาณโหลดรายวัน</h2>
+  <div class="card"><div class="chartbox"><canvas id="chart"></canvas></div></div>
+  <h2><i class="fa-solid fa-list-check"></i>รายการโหลด</h2>
+  <div class="card wrap"><table>
+    <thead><tr><th>วันที่</th><th>จำนวนตัน</th><th>จำนวนตู้</th><th>จำนวนที่รอโหลด</th><th>จำนวนที่รอโหลดจากวางแผน</th><th>%</th></tr></thead>
+    <tbody id="lBody"></tbody>
+  </table></div>
+
+  <!-- อาหารรอโหลด -->
+  <h2><i class="fa-solid fa-clock"></i>อาหารรอโหลด</h2>
+  <div class="card" style="padding:14px 16px;margin-bottom:12px">
+    <input type="text" id="wSearch" placeholder="ค้นหา ประเทศ / ลูกค้า / PCG / SKU / Remark">
+  </div>
+  <div class="card wrap"><table>
+    <thead><tr><th>วันที่โหลด</th><th>ประเทศ</th><th>ชื่อลูกค้า</th><th>PCG</th><th>SKU</th><th>ปริมาณ Order</th><th>ปริมาณรอผลิต</th><th>หน่วยงาน</th><th>Remark</th></tr></thead>
+    <tbody id="wBody"><tr><td colspan="9" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
+  </table></div>
+</section>
+</main>
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const fmt = (n, d = 0) => Number(n).toLocaleString('en-US', {minimumFractionDigits: d, maximumFractionDigits: d});
+const qty = n => fmt(n, n % 1 ? 2 : 0);
+const run = (fn, ...a) => new Promise((ok, no) => google.script.run.withSuccessHandler(ok).withFailureHandler(no)[fn](...a));
+const TH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dash = v => esc(v === '' || v == null ? '-' : v);
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)}
+function showErr(e){$('#err').innerHTML='<div class="err"><b>โหลดข้อมูลไม่สำเร็จ</b><br>'+esc(e.message||e)+'</div>'}
+
+/* ---- tabs ---- */
+let loaded = {};
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
+  ['order','load'].forEach(p => $('#p-' + p).hidden = p !== b.dataset.p);
+  $('#err').innerHTML = '';
+  if (!loaded[b.dataset.p]) init[b.dataset.p]();
+});
+
+/* ---- หน้า 1 ---- */
+const init = {
+ async order(){
+  loaded.order = 1;
+  try {
+    const d = await run('getOrderData');
+    $('#months').innerHTML = d.months.map((m,i) => `
+      <div class="card" style="border-top:5px solid ${i?'#15935f':'#0f2742'}">
+        <div class="mhead"><span><i class="fa-regular fa-calendar-check"></i> ออเดอร์เดือน${TH[m.month]}</span><small>${m.year + 543}</small></div>
+        <div class="bar"><b style="width:${Math.max(m.pct,m.pct?8:0)}%">${m.pct ? m.pct + '%' : ''}</b></div>
+        <div class="stats">
+          <div><small>ปริมาณออเดอร์</small><strong>${fmt(m.order,2)}</strong></div>
+          <div><small>ผลิตแล้ว</small><strong class="ok">${fmt(m.done,2)}</strong></div>
+          <div><small>ค้างผลิต</small><strong class="warn">${fmt(m.remain,2)}</strong></div>
+        </div>
+      </div>`).join('');
+    $('#gBody').innerHTML = d.groups.length ? d.groups.map(g => {
+      const n = d.notes[g.load] || {};
+            return `<tr data-d="${esc(g.load)}" data-i="${esc(n.inspec)}" data-r="${esc(n.remark)}"><td><b>${esc(g.load)}</b></td>
+        <td><span class="pill o">${fmt(g.remain,2)}</span></td>
+        <td>${g.pack ? esc(g.pack) : '<span class="pill n">ยังไม่มี</span>'}</td>
+        <td><input type="text" class="i-ins" value="${esc(n.inspec)}" aria-label="inspec"></td>
+        <td><input type="text" class="i-rem" value="${esc(n.remark)}" aria-label="Remark"></td></tr>`;
+    }).join('') : '<tr><td colspan="5" class="empty">ไม่มีงานค้างผลิต 🎉</td></tr>';
+  } catch(e){ showErr(e) }
+ },
+ async load(){
+  loaded.load = 1;
+  loadWait(); // โหลดตารางอาหารรอโหลดพร้อมกัน (error แยกกัน)
+  try { DATA = await run('getLoadData'); renderLoad(); } catch(e){ showErr(e) }
+ }
+};
+$('#bSave').onclick = async () => {
+  const val = (r, c) => r.querySelector(c).value.trim();
+  const changed = [...document.querySelectorAll('#gBody tr[data-d]')].filter(r =>
+    val(r, '.i-ins') !== r.dataset.i || val(r, '.i-rem') !== r.dataset.r);
+  if (!changed.length) return toast('ไม่มีรายการที่แก้ไข');
+  const items = changed.map(r => ({date: r.dataset.d, inspec: val(r, '.i-ins'), remark: val(r, '.i-rem')}));
+  try {
+    await run('saveNotes', items);
+    changed.forEach(r => { r.dataset.i = val(r, '.i-ins'); r.dataset.r = val(r, '.i-rem'); });
+    toast('บันทึกแล้ว ' + items.length + ' รายการ');
+  } catch(e){ showErr(e) }
+};
+$('#bClear').onclick = async () => {
+  if (!confirm('ล้าง inspec และ Remark ของทุกวันโหลด (มีผลกับผู้ใช้ทุกคน)?')) return;
+  try {
+    await run('clearNotes');
+    document.querySelectorAll('#gBody tr[data-d]').forEach(r => {
+      r.querySelectorAll('input').forEach(i => i.value = '');
+      r.dataset.i = ''; r.dataset.r = '';
+    });
+    toast('ล้างบันทึกแล้ว');
+  } catch(e){ showErr(e) }
+};
+
+/* ---- หน้า 2 ---- */
+let DATA = null, chart = null;
+function dayRange(a, b){ const out = [], d = new Date(a + 'T00:00:00Z'), e = new Date(b + 'T00:00:00Z');
+  for (; d <= e; d.setUTCDate(d.getUTCDate() + 1)) out.push(d.toISOString().slice(0, 10)); return out; }
+function renderLoad(){
+  if (!DATA) return;
+  const from = $('#dFrom').value, to = $('#dTo').value;
+  const inRange = k => (!from || k >= from) && (!to || k <= to);
+  const map = Object.fromEntries(DATA.days.map(x => [x.date, x]));
+  const keys = DATA.days.map(x => x.date).sort();
+  if (!keys.length) { $('#lBody').innerHTML = '<tr><td colspan="6" class="empty">ยังไม่มีข้อมูลการโหลด</td></tr>'; return; }
+  const all = dayRange(from && from > keys[0] ? from : keys[0], to && to < keys.at(-1) ? to : keys.at(-1)).filter(inRange).reverse();
+  const rows = all.map(k => map[k] || {date: k, ton: 0, box: 0, wait: 0, plan: 0});
+  const sum = (f) => rows.reduce((s, r) => s + r[f], 0);
+  $('#kBox').textContent = fmt(sum('box')) + ' ตู้';
+  $('#kTon').textContent = fmt(sum('ton'), 1) + ' ตัน';
+
+  const w = {}; all.forEach(k => Object.entries(DATA.wh[k] || {}).forEach(([n, v]) => w[n] = (w[n] || 0) + v));
+  const ws = Object.entries(w).sort((a, b) => b[1] - a[1]);
+  $('#whCards').innerHTML = ws.length ? ws.map(([n, v]) => `<div class="card wh"><small>${esc(n)}</small><strong>${fmt(v)} ตู้</strong></div>`).join('')
+    : '<div class="card empty" style="grid-column:1/-1">ไม่พบคอลัมน์คลังในแท็บโหลด</div>';
+
+  $('#lBody').innerHTML = rows.map(r => {
+    const tot = r.box + r.wait;
+    const p = r.pct != null ? r.pct : (r.box === 0 ? 0 : (tot ? r.box / tot * 100 : 100));
+    return `<tr><td>${r.date}</td><td>${fmt(r.ton,1)}</td><td>${fmt(r.box)}</td><td>${fmt(r.wait)}</td><td>${fmt(r.plan)}</td>
+      <td><span class="pill ${p >= 100 ? 'g' : p > 0 ? 'o' : 'n'}">${p.toFixed(1)}%</span></td></tr>`;
+  }).join('');
+
+  const asc = rows.slice().reverse();
+  if (chart) chart.destroy();
+  chart = new Chart($('#chart'), {
+    data: {labels: asc.map(r => r.date.slice(5)), datasets: [
+      {type: 'bar', label: 'ตู้', data: asc.map(r => r.box), backgroundColor: '#0e7c86', borderRadius: 6, yAxisID: 'y'},
+      {type: 'line', label: 'ตัน', data: asc.map(r => r.ton), borderColor: '#e8590c', backgroundColor: '#e8590c', tension: .35, pointRadius: 3, yAxisID: 'y1'}]},
+    options: {maintainAspectRatio: false, interaction: {mode: 'index', intersect: false},
+      plugins: {legend: {position: 'bottom'}},
+      scales: {y: {beginAtZero: true, title: {display: true, text: 'ตู้'}, grid: {color: '#eef1f5'}},
+               y1: {beginAtZero: true, position: 'right', grid: {display: false}, title: {display: true, text: 'ตัน'}},
+               x: {grid: {display: false}}}}
+  });
+}
+['dFrom','dTo'].forEach(i => $('#' + i).onchange = () => { renderLoad(); renderWait(); });
+$('#bReset').onclick = () => { $('#dFrom').value = $('#dTo').value = ''; renderLoad(); renderWait(); };
+
+/* ---- อาหารรอโหลด ---- */
+let WAIT = [];
+async function loadWait(){
+  try { WAIT = await run('getWaitData'); renderWait(); }
+  catch(e){ $('#wBody').innerHTML = '<tr><td colspan="9" class="empty">' + esc(e.message || e) + '</td></tr>'; }
+}
+function renderWait(){
+  const q = $('#wSearch').value.trim().toLowerCase();
+  const from = $('#dFrom').value, to = $('#dTo').value;
+  const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d);
+
+  const rows = WAIT
+    // กรองตามช่วงวันที่ของหน้า (แถวที่ไม่มีวันที่จะถูกซ่อนเมื่อมีการเลือกช่วง)
+    .filter(r => (!from && !to) || (isDate(r.date) && (!from || r.date >= from) && (!to || r.date <= to)))
+    // กรองตามช่องค้นหา
+    .filter(r => !q || Object.values(r).join(' ').toLowerCase().includes(q))
+    // เรียงจากวันที่ล่าสุดไปเก่าสุด (แถวที่ไม่มีวันที่อยู่ท้ายสุด)
+    .sort((a, b) => isDate(a.date) === isDate(b.date)
+      ? b.date.localeCompare(a.date)
+      : (isDate(a.date) ? -1 : 1));
+
+  $('#wBody').innerHTML = rows.length ? rows.map(r => `<tr>
+    <td><span class="pill d">${dash(r.date)}</span></td>
+    <td>${dash(r.country)}</td><td>${dash(r.customer)}</td><td>${dash(r.pcg)}</td>
+    <td class="sku">${dash(r.sku)}</td>
+    <td>${qty(r.order)}</td><td class="red">${qty(r.remain)}</td>
+    <td>${dash(r.dept)}</td><td class="rmk">${dash(r.remark)}</td></tr>`).join('')
+    : '<tr><td colspan="9" class="empty">ไม่พบรายการในช่วงวันที่ที่เลือก</td></tr>';
+}
+$('#wSearch').oninput = renderWait;
+
+init.order();
+</script>
+</body>
+</html>
